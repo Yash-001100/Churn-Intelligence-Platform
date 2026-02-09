@@ -634,5 +634,3 @@ Pre-generated charts (SHAP, monitoring, ROI) are written to `reports/figures/` b
 - **License:** See the repository’s LICENSE file (or specify “MIT”, “Apache-2.0”, etc.).  
 - **Dataset:** Default dataset is Telco-style (e.g. IBM Telco Customer Churn); check the data source for terms of use.  
 - **Libraries:** This project uses scikit-learn, XGBoost, LightGBM, CatBoost, Optuna, SHAP, Streamlit, Flask, ReportLab, simple-salesforce, and other open-source packages; see `requirements.txt` and respective project licenses.
-
----
