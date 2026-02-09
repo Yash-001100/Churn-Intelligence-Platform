@@ -1,0 +1,20 @@
+# Environment and secrets (do not commit)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+venv/
+.venv/
+env/
+
+# Data and models (optional: uncomment if you don't want to track large files)
+# data/*.csv
+# models/*.joblib
+data/users.db
+models/model.joblib
+
+# Training artifacts
+catboost_info/

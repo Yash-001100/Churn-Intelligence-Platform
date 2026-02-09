@@ -1,0 +1,6 @@
+{
+  "model_name": "CatBoost (tuned)",
+  "accuracy": 0.8091,
+  "f1_score": 0.5967,
+  "roc_auc": 0.8587
+}

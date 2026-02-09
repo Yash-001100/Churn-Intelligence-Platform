@@ -1,0 +1,129 @@
+{
+  "name": "Churn Prediction + Daily Email (Gmail)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-1",
+      "name": "Daily at 9am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://YOUR-NGROK-URL/run-predict",
+        "options": {
+          "timeout": 300000,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "ngrok-skip-browser-warning",
+                "value": "true"
+              }
+            ]
+          }
+        }
+      },
+      "id": "http-1",
+      "name": "Run Churn Prediction API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://YOUR-NGROK-URL/report",
+        "options": {
+          "timeout": 90000,
+          "response": {
+            "responseFormat": "file"
+          },
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "ngrok-skip-browser-warning",
+                "value": "true"
+              }
+            ]
+          }
+        }
+      },
+      "id": "http-report",
+      "name": "Generate Report PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "toList": "your-email@example.com",
+        "subject": "Daily Churn Risk Analysis — Complete",
+        "emailType": "text",
+        "message": "Hi Team,\n\nThe daily churn risk analysis has completed successfully.\n\nA total of {{ $node[\"Run Churn Prediction API\"].json.summary.total.toLocaleString() }} customers were scored using our model to identify churn risk and prioritize retention actions.\n\n📊 Summary Metrics\n• Total customers analyzed: {{ $node[\"Run Churn Prediction API\"].json.summary.total.toLocaleString() }}\n• High risk: {{ $node[\"Run Churn Prediction API\"].json.summary.high_risk.toLocaleString() }} ({{ Math.round(($node[\"Run Churn Prediction API\"].json.summary.high_risk / $node[\"Run Churn Prediction API\"].json.summary.total) * 1000) / 10 }}%)\n• Medium risk: {{ $node[\"Run Churn Prediction API\"].json.summary.medium_risk.toLocaleString() }} ({{ Math.round(($node[\"Run Churn Prediction API\"].json.summary.medium_risk / $node[\"Run Churn Prediction API\"].json.summary.total) * 1000) / 10 }}%)\n• Low risk: {{ $node[\"Run Churn Prediction API\"].json.summary.low_risk.toLocaleString() }} ({{ Math.round(($node[\"Run Churn Prediction API\"].json.summary.low_risk / $node[\"Run Churn Prediction API\"].json.summary.total) * 1000) / 10 }}%)\n\n🔍 Key Insights\n• Month-to-month customers continue to show the highest churn probability.\n• Short-tenure and high monthly charge customers contribute most to risk.\n• Two-year contracts show the lowest churn likelihood.\n\n🔯 Recommended Actions\n• Prioritize outreach to high-risk customers.\n• Offer contract upgrades or retention incentives.\n• Monitor medium-risk segment with targeted engagement.\n\n📎 Attachments & Resources\n• Full PDF report with charts and insights (attached)\n• predictions.csv for detailed records\n• Dashboard for interactive exploration\n\nPlease review and let me know if any additional analysis is required.\n\nBest regards,\nYash Kalra\nData Science & ML Engineer\nAI-Powered Churn Analytics System",
+        "options": {
+          "attachmentFieldName": "data"
+        }
+      },
+      "id": "gmail-1",
+      "name": "Gmail Send",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Daily at 9am": {
+      "main": [
+        [
+          {
+            "node": "Run Churn Prediction API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Churn Prediction API": {
+      "main": [
+        [
+          {
+            "node": "Generate Report PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Report PDF": {
+      "main": [
+        [
+          {
+            "node": "Gmail Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "description": "1) Run predictions (API). 2) Generate report PDF (API /report). 3) Email PDF via Gmail."
+  }
+}
