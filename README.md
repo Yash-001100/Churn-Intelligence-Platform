@@ -152,8 +152,8 @@ flowchart LR
   E --> G[report_generator]
   E --> H[salesforce_sync]
   E --> I[monitoring]
-  J[n8n Schedule] --> K[/run-predict]
-  K --> L[/report]
+  J[n8n Schedule] --> K[run-predict]
+  K --> L[report]
   L --> M[Gmail]
 ```
 
