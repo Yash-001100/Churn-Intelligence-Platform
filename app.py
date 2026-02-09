@@ -76,9 +76,62 @@ PALETTE = {
     "shadow_lift": "0 20px 50px -15px rgba(0,0,0,0.15)",
 }
 
+# App version for About tab
+APP_VERSION = "1.0.0"
+
 # Login branding: navy text, teal accent (themeable via CSS)
 LOGIN_NAVY = "#0F172A"
 LOGIN_TEAL = "#0D9488"
+
+
+def _render_kebab_dropdown(is_logged_in=False, username=None, key_prefix="menu"):
+    """Render dropdown with tabs: Account, About, Help. Use inside st.popover."""
+    tab1, tab2, tab3 = st.tabs(["Account", "About", "Help"])
+    with tab1:
+        st.markdown("**Account**")
+        if is_logged_in and username:
+            st.caption(f"Logged in as: **{username}**")
+        else:
+            st.caption("Not logged in")
+    with tab2:
+        st.markdown("**About**")
+        st.markdown("**Churn Intelligence Platform**")
+        st.markdown(
+            "This dashboard helps you identify at-risk customers and prioritize retention actions. "
+            "It uses an ML model to score churn probability, explains risk with SHAP drivers, and supports "
+            "CRM sync (Salesforce), automated reports, and ROI simulation."
+        )
+        st.caption(f"**Version:** {APP_VERSION}")
+        st.caption("**Developer:** Yash Kalra")
+    with tab3:
+        st.markdown("**Help**")
+        with st.expander("How are churn risk levels defined?", expanded=False):
+            st.markdown(
+                "Risk is based on churn probability: **Low** (&lt; 0.33), **Medium** (0.33–0.66), **High** (&gt; 0.66). "
+                "Use these bands to prioritize retention actions."
+            )
+        with st.expander("What is SHAP and Top Drivers?", expanded=False):
+            st.markdown(
+                "SHAP explains how each feature affects a customer's churn score. "
+                "**Top Drivers** lists the main factors (e.g. contract type, tenure) that push risk up or down."
+            )
+        with st.expander("Why might Salesforce sync fail?", expanded=False):
+            st.markdown(
+                "Check: **invalid_grant** (OAuth/Connected App settings, password + token, My Domain); "
+                "credentials in .env; **SF_DOMAIN** (use `test` for sandbox)."
+            )
+        with st.expander("How often does the dashboard update?", expanded=False):
+            st.markdown(
+                "Predictions can run on a schedule (e.g. n8n daily) or manually. "
+                "The dashboard shows the latest from `data/predictions_enriched.csv`; refresh after a new run."
+            )
+        st.caption("**Need help?**")
+        st.markdown(
+            'Email: **kalrayashpreet@gmail.com** · '
+            '<a href="mailto:kalrayashpreet@gmail.com" target="_blank" rel="noopener">📧 Email support</a>',
+            unsafe_allow_html=True,
+        )
+
 
 # Inline SVG: line chart inside shield (no CDN; fill/stroke via currentColor)
 LOGIN_LOGO_SVG = """
@@ -140,8 +193,23 @@ st.markdown(f"""
         border-image: linear-gradient(90deg, {PALETTE["primary"]}, {PALETTE["accent"]}) 1;
         box-shadow: 0 4px 20px rgba(14, 165, 233, 0.08);
     }}
-    /* Hide popover chevron/arrow (keep ⋮ label only) */
-    .main [data-testid="stPopover"] button svg {{
+    /* Kebab popover trigger: no box, three dots only (⋮) */
+    .main [data-testid="stPopover"] button,
+    .auth-container [data-testid="stPopover"] button {{
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        min-height: 2rem !important;
+        padding: 0.25rem 0.5rem !important;
+        color: {PALETTE["text"]} !important;
+    }}
+    .main [data-testid="stPopover"] button:hover,
+    .auth-container [data-testid="stPopover"] button:hover {{
+        background: rgba(14, 165, 233, 0.08) !important;
+        border-radius: 8px !important;
+    }}
+    .main [data-testid="stPopover"] button svg,
+    .auth-container [data-testid="stPopover"] button svg {{
         display: none !important;
     }}
     .dashboard-subtitle {{
@@ -189,20 +257,15 @@ st.markdown(f"""
         border-bottom: 1px solid {PALETTE["border"]};
     }}
 
-    /* ----- Sidebar — force visible, gradient, glass effect ----- */
+    /* ----- Sidebar — gradient, glass effect; allow Streamlit collapse/expand via arrow ----- */
     section[data-testid="stSidebar"],
     [data-testid="stSidebar"] {{
-        display: block !important;
-        visibility: visible !important;
-        transform: none !important;
-        min-width: 21rem !important;
         background: {PALETTE["sidebar"]} !important;
         border-right: 1px solid rgba(255,255,255,0.08);
         box-shadow: 4px 0 24px rgba(0,0,0,0.12);
     }}
     [data-testid="stSidebar"] [data-testid="stSidebarContent"] {{
         overflow-y: auto !important;
-        visibility: visible !important;
     }}
     [data-testid="stSidebar"] > div:first-child {{
         background: transparent !important;
@@ -352,6 +415,39 @@ st.markdown(f"""
         color: {PALETTE["text_muted"]} !important;
         text-align: right;
         margin-top: 0.25rem;
+    }}
+    /* Kebab menu (login + dashboard): three dots only, fixed top-right, no box */
+    .kebab-icon {{
+        position: fixed !important;
+        top: 16px !important;
+        right: 16px !important;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none !important;
+        background: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        opacity: 0.75;
+        transition: opacity 0.2s ease;
+        z-index: 999;
+        color: {PALETTE["text"]};
+    }}
+    .kebab-icon:hover {{
+        opacity: 1;
+    }}
+    .kebab-icon svg {{
+        display: block;
+    }}
+    /* Auth: menu column aligned top-right */
+    .auth-container .stHorizontalBlock > div:last-child {{
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
     }}
     .auth-container.login-view {{
         max-width: 720px;
@@ -662,16 +758,7 @@ def show_login_signup():
         else:
             st.markdown("<p class='login-header-label'>Sign up</p>", unsafe_allow_html=True)
         with st.popover("⋮", help="Menu"):
-            if st.button("Account", use_container_width=True, key="menu_account"):
-                st.session_state.auth_tab = "Login"
-                st.rerun()
-            if st.button("About", use_container_width=True, key="menu_about"):
-                st.session_state.show_about = True
-                st.rerun()
-    st.markdown(
-        "<p class='auth-subtitle'>Predict risk • Explain drivers • Automate retention</p>",
-        unsafe_allow_html=True,
-    )
+            _render_kebab_dropdown(is_logged_in=False, username=None, key_prefix="login_menu")
     auth_tab = st.radio("Login or Sign up", ["Login", "Sign up"], key="auth_tab", horizontal=True, label_visibility="collapsed")
     if auth_tab == "Login":
         st.markdown("<div class='login-screen-marker' aria-hidden='true'></div>", unsafe_allow_html=True)
@@ -690,11 +777,7 @@ def show_login_signup():
                 placeholder="Enter your password",
                 label_visibility="visible",
             )
-            show_pass_col, remember_col = st.columns(2)
-            with show_pass_col:
-                st.checkbox("Show password", key="login_show_password", value=login_show_pass)
-            with remember_col:
-                st.checkbox("Remember me", key="login_remember", value=st.session_state.get("login_remember", False))
+            st.checkbox("Show password", key="login_show_password", value=login_show_pass)
             login_btn = st.form_submit_button("Log in →")
         if login_btn:
             with st.spinner("Signing in..."):
@@ -894,19 +977,49 @@ def main():
             </div>
         """, unsafe_allow_html=True)
     with col_menu:
-        st.markdown("<div class='dashboard-menu-wrap'>", unsafe_allow_html=True)
         with st.popover("⋮", help="Menu"):
-            st.markdown("**Account**")
-            st.caption(f"Logged in as **{st.session_state.get('username', '')}**")
-            st.divider()
-            if st.button("About", use_container_width=True, key="main_menu_about"):
-                st.session_state.show_about = True
-                st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+            _render_kebab_dropdown(
+                is_logged_in=True,
+                username=st.session_state.get("username"),
+                key_prefix="dash_menu",
+            )
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.caption("Use the **sidebar** on the left to filter by risk, switch views (Predictions, ROI, Upload, Single Customer), and change chart options. If you don't see it, click the **▶** arrow at the left edge to open it.")
-    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
+    # Open-sidebar control: use components.html so JS runs (markdown strips onclick)
+    # Open sidebar: try JS click on Streamlit's expand button; fallback = reload so sidebar opens (initial_sidebar_state=expanded)
+    open_sidebar_html = """
+    <div style="display:flex;align-items:center;gap:0.75rem;margin:0;padding:0;">
+      <span style="color:#64748B;font-size:0.875rem;">Use the sidebar to filter and switch views.</span>
+      <button type="button" id="openSidebarBtn" style="padding:0.4rem 0.75rem;background:#1E293B;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.875rem;box-shadow:0 2px 8px rgba(0,0,0,0.15);">▶ Open sidebar</button>
+    </div>
+    <script>
+    (function() {
+      var btn = document.getElementById('openSidebarBtn');
+      if (!btn) return;
+      btn.onclick = function() {
+        var expanded = false;
+        try {
+          var doc = window.parent.document;
+          var sidebar = doc.querySelector('section[data-testid="stSidebar"]') || doc.querySelector('[data-testid="stSidebar"]');
+          if (sidebar) {
+            var buttons = sidebar.querySelectorAll('button, [role="button"]');
+            for (var i = 0; i < buttons.length; i++) {
+              var b = buttons[i];
+              if (b.offsetWidth > 0 && b.offsetHeight > 0) { b.click(); expanded = true; break; }
+            }
+            if (!expanded && typeof sidebar.click === 'function') { sidebar.click(); expanded = true; }
+          }
+        } catch (e) {}
+        if (!expanded) { try { window.parent.location.reload(); } catch (e2) {} }
+      };
+    })();
+    </script>
+    """
+    try:
+        st.components.v1.html(open_sidebar_html, height=48, scrolling=False)
+    except Exception:
+        st.caption("If the sidebar is closed, **refresh the page (F5)** to open it again.")
+    st.markdown("<div style='margin-bottom: 0.5rem;'></div>", unsafe_allow_html=True)
 
     model, encoder, scaler, column_meta = load_model_and_meta()
     has_model = model is not None
