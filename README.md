@@ -636,6 +636,3 @@ Pre-generated charts (SHAP, monitoring, ROI) are written to `reports/figures/` b
 - **Libraries:** This project uses scikit-learn, XGBoost, LightGBM, CatBoost, Optuna, SHAP, Streamlit, Flask, ReportLab, simple-salesforce, and other open-source packages; see `requirements.txt` and respective project licenses.
 
 ---
-
-**Summary for recruiters:**  
-End-to-end churn platform: train (tuned XGB/LGB/CatBoost + stacking) → predict + SHAP → Streamlit dashboard with login → PDF report → n8n scheduling + email → Salesforce Contact/Task sync → PSI drift + trend monitoring → ROI simulator. Python, production-style structure, no placeholders; runnable in 5–10 minutes with data and `.env` configured.
