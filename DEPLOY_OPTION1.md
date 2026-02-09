@@ -88,9 +88,9 @@ Save. The app will use these as environment variables (no `.env` file on the clo
 
 | Step | Action |
 |------|--------|
-| 1 | Create a new repo on GitHub. |
-| 2 | From project folder: `git init`, `git add .`, `git commit`, `git remote add origin ...`, `git push -u origin main`. |
-| 3 | Go to share.streamlit.io → New app → select repo, branch `main`, file `app.py` → Deploy. |
+| 1 | Repo already created: [Yash-001100/Churn-Intelligence-Platform](https://github.com/Yash-001100/Churn-Intelligence-Platform). |
+| 2 | Code pushed: `git init`, `git add .`, `git commit`, `git remote add origin https://github.com/Yash-001100/Churn-Intelligence-Platform.git`, `git push -u origin main`. |
+| 3 | Go to [share.streamlit.io](https://share.streamlit.io) → New app → Repository: `Yash-001100/Churn-Intelligence-Platform`, branch `main`, file `app.py` → Deploy. |
 | 4 | Copy the App URL and share it. |
 
 Your dashboard is then live at that URL for anyone to use.
